@@ -1,0 +1,127 @@
+{
+  "startedAt": "2026-10-09T21:23:18.924434+00:00",
+  "actor": "verification-actor-a",
+  "isolationActor": "verification-actor-b",
+  "cyclesRequested": 5,
+  "cyclesCompleted": 5,
+  "observations": [
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 1,
+      "fileCount": 1,
+      "requestSeconds": 0.421,
+      "workerPod": "counter-worker-a",
+      "node": "worker-node-a"
+    },
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 2,
+      "fileCount": 2,
+      "requestSeconds": 0.516,
+      "workerPod": "counter-worker-b",
+      "node": "worker-node-a"
+    },
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 3,
+      "fileCount": 3,
+      "requestSeconds": 0.55,
+      "workerPod": "counter-worker-c",
+      "node": "worker-node-a"
+    },
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 4,
+      "fileCount": 4,
+      "requestSeconds": 0.481,
+      "workerPod": "counter-worker-b",
+      "node": "worker-node-a"
+    },
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 5,
+      "fileCount": 5,
+      "requestSeconds": 0.53,
+      "workerPod": "counter-worker-d",
+      "node": "worker-node-a"
+    },
+    {
+      "ip": "sandbox-ip-a",
+      "memoryCount": 6,
+      "fileCount": 6,
+      "requestSeconds": 0.524,
+      "workerPod": "counter-worker-d",
+      "node": "worker-node-a"
+    }
+  ],
+  "phase": "temporary port-forward stopped",
+  "outcome": "passed",
+  "restoration": {
+    "portForwardStopped": true,
+    "proofActorsSuspended": true
+  },
+  "updatedAt": "2026-10-09T21:24:05.926717+00:00",
+  "initialHealth": {
+    "namespaces": {
+      "ate-system": {
+        "readyPods": 8,
+        "containerRestarts": 0
+      },
+      "ate-demo-counter": {
+        "readyPods": 3,
+        "containerRestarts": 0
+      },
+      "podcertificate-controller-system": {
+        "readyPods": 1,
+        "containerRestarts": 0
+      },
+      "otel-system": {
+        "readyPods": 3,
+        "containerRestarts": 0
+      }
+    },
+    "publicApplicationServices": 0,
+    "workerReplicas": 3
+  },
+  "replacedWorker": "counter-worker-a",
+  "isolatedObservation": {
+    "ip": "sandbox-ip-a",
+    "memoryCount": 1,
+    "fileCount": 1,
+    "requestSeconds": 0.429,
+    "workerPod": "counter-worker-b",
+    "node": "worker-node-a"
+  },
+  "finalActorState": "ACTOR_STATE_SUSPENDED",
+  "finalIsolationState": "ACTOR_STATE_SUSPENDED",
+  "finalHealth": {
+    "namespaces": {
+      "ate-system": {
+        "readyPods": 8,
+        "containerRestarts": 0
+      },
+      "ate-demo-counter": {
+        "readyPods": 3,
+        "containerRestarts": 0
+      },
+      "podcertificate-controller-system": {
+        "readyPods": 1,
+        "containerRestarts": 0
+      },
+      "otel-system": {
+        "readyPods": 3,
+        "containerRestarts": 0
+      }
+    },
+    "publicApplicationServices": 0,
+    "workerReplicas": 3
+  },
+  "provenance": {
+    "upstream": "https://github.com/agent-substrate/substrate",
+    "release": "v0.4.0",
+    "commit": "756c2a53741121e728f4cc3066c8a19e575b4919",
+    "kubernetes": "1.37.0 AKS preview",
+    "scope": "same-node gVisor worker-pod restore, not cross-node or LLM validation",
+    "anonymization": "Deployment-specific actor, worker, node and IP identifiers use stable aliases. Measurements, states and identifier relationships are unchanged."
+  }
+}

@@ -1,0 +1,140 @@
+diff --git a/manifests/ate-install/kind/atelet/kustomization.yaml b/manifests/ate-install/kind/atelet/kustomization.yaml
+index 023b922e..940b033f 100644
+--- a/manifests/ate-install/kind/atelet/kustomization.yaml
++++ b/manifests/ate-install/kind/atelet/kustomization.yaml
+@@ -31,12 +31,12 @@ patches:
+             containers:
+             - name: atelet
+               args:
+-              - --localhost-registry-replacement=kind-registry:5000
++              - --image-credential-provider-config=/run/image-credential-provider/config.yaml
++              - --image-credential-provider-bin-dir=/run/image-credential-provider/bin
+               - --grpc-server-cred-bundle=/run/podidentity.podcert.ate.dev/credential-bundle.pem
+               - --client-ca-certs=/run/podidentity.podcert.ate.dev/trust-bundle.pem
+-              # Kind clusters are dev/CI: run atelet at debug so e2e suites can
+-              # assert on per-item log lines. Production installs default to info.
+-              - --log-level=debug
++              - --ateapi-ca-file=/run/servicedns.podcert.ate.dev/trust-bundle.pem
++              - --log-level=info
+               # The OTLP endpoint comes from the ate-otel-config ConfigMap the
+               # atelet DaemonSet consumes via envFrom; the kind copy lives at
+               # ../ate-otel-config.yaml and is applied by the parent overlay or
+@@ -50,23 +50,41 @@ patches:
+                 value: http://rustfs.ate-system.svc:9000
+               - name: AWS_S3_USE_PATH_STYLE
+                 value: "true"
+-              # TODO: use a secret / identity management
+               - name: AWS_ACCESS_KEY_ID
+-                value: rustfsadmin
++                valueFrom:
++                  secretKeyRef:
++                    name: substrate-s3
++                    key: access-key
+               - name: AWS_SECRET_ACCESS_KEY
+-                value: rustfsadmin
+-              # kind nodes ship no credential provider plugin (the args above
+-              # leave the --image-credential-provider-* flags unset), so drop
+-              # the base manifest's host mounts instead of fabricating empty
+-              # ones on the node. volumeMounts merges on mountPath; volumes
+-              # merges on name.
++                valueFrom:
++                  secretKeyRef:
++                    name: substrate-s3
++                    key: secret-key
++              # Mount the AKS provider binary as a file to resolve host symlinks.
+               volumeMounts:
+               - mountPath: /run/image-credential-provider/bin
+                 $patch: delete
++              - name: aks-acr-provider
++                mountPath: /run/image-credential-provider/bin/acr-credential-provider
++                readOnly: true
+               - mountPath: /run/image-credential-provider/config.yaml
+-                $patch: delete
++                name: image-credential-provider-config
++                readOnly: true
++              - name: aks-cloud-config
++                mountPath: /etc/kubernetes/azure.json
++                readOnly: true
+             volumes:
+             - name: image-credential-provider-bin
+               $patch: delete
++            - name: aks-acr-provider
++              hostPath:
++                path: /var/lib/kubelet/credential-provider/acr-credential-provider
++                type: File
+             - name: image-credential-provider-config
+-              $patch: delete
++              hostPath:
++                path: /var/lib/kubelet/credential-provider-config.yaml
++                type: File
++            - name: aks-cloud-config
++              hostPath:
++                path: /etc/kubernetes/azure.json
++                type: File
+diff --git a/manifests/ate-install/kind/kustomization.yaml b/manifests/ate-install/kind/kustomization.yaml
+index b4feace6..12828d15 100644
+--- a/manifests/ate-install/kind/kustomization.yaml
++++ b/manifests/ate-install/kind/kustomization.yaml
+@@ -69,9 +69,13 @@ patches:
+                 value: http://rustfs.ate-system.svc:9000
+               - name: AWS_S3_USE_PATH_STYLE
+                 value: "true"
+-              # TODO: use a secret / identity management
+               - name: AWS_ACCESS_KEY_ID
+-                value: rustfsadmin
++                valueFrom:
++                  secretKeyRef:
++                    name: substrate-s3
++                    key: access-key
+               - name: AWS_SECRET_ACCESS_KEY
+-                value: rustfsadmin
+-
++                valueFrom:
++                  secretKeyRef:
++                    name: substrate-s3
++                    key: secret-key
+diff --git a/manifests/ate-install/kind/rustfs.yaml b/manifests/ate-install/kind/rustfs.yaml
+index 3185390d..2eb2c247 100644
+--- a/manifests/ate-install/kind/rustfs.yaml
++++ b/manifests/ate-install/kind/rustfs.yaml
+@@ -75,13 +75,19 @@ spec:
+         - name: RUSTFS_CONSOLE_ADDRESS
+           value: ":9001"
+         - name: RUSTFS_CONSOLE_ENABLE
+-          value: "true"
++          value: "false"
+         - name: RUSTFS_VOLUMES
+           value: "/data"
+         - name: RUSTFS_ACCESS_KEY
+-          value: "rustfsadmin"
++          valueFrom:
++            secretKeyRef:
++              name: substrate-s3
++              key: access-key
+         - name: RUSTFS_SECRET_KEY
+-          value: "rustfsadmin"
++          valueFrom:
++            secretKeyRef:
++              name: substrate-s3
++              key: secret-key
+         volumeMounts:
+         - name: data
+           mountPath: /data
+@@ -105,9 +111,15 @@ spec:
+         image: amazon/aws-cli:2.17.0@sha256:643507c10ada7964ca6157b3d799f030b90577643da9955d319a77399ed80d73
+         env:
+         - name: AWS_ACCESS_KEY_ID
+-          value: rustfsadmin
++          valueFrom:
++            secretKeyRef:
++              name: substrate-s3
++              key: access-key
+         - name: AWS_SECRET_ACCESS_KEY
+-          value: rustfsadmin
++          valueFrom:
++            secretKeyRef:
++              name: substrate-s3
++              key: secret-key
+         - name: AWS_REGION
+           value: us-east-1
+         - name: AWS_ENDPOINT_URL
